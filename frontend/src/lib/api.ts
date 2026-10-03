@@ -67,21 +67,25 @@ export async function loginPing() {
 }
 
 export async function login() {
-  const formData = new URLSearchParams();
-  formData.append('username', 'haripriya');
-  formData.append('password', 'password');
+  try {
+    const formData = new URLSearchParams();
+    formData.append('username', 'haripriya');
+    formData.append('password', 'password');
 
-  const res = await fetch(`${API_URL}/auth/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: formData.toString()
-  });
-  
-  if (res.ok) {
-    const data = await res.json();
-    localStorage.setItem('access_token', data.access_token);
-    await loginPing();
-    return true;
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData.toString()
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      localStorage.setItem('access_token', data.access_token);
+      await loginPing();
+      return true;
+    }
+  } catch (err) {
+    console.warn('Auto-login failed or backend unreachable:', err);
   }
   return false;
 }

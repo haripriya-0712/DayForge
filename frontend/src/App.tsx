@@ -14,10 +14,19 @@ function App() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    login().then(() => setIsReady(true));
+    login()
+      .catch((err) => console.warn('Login check complete:', err))
+      .finally(() => setIsReady(true));
   }, []);
 
-  if (!isReady) return null;
+  if (!isReady) {
+    return (
+      <div className="min-h-screen bg-[#0F0E17] text-white flex flex-col items-center justify-center p-4">
+        <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-gray-400 text-sm font-medium animate-pulse">Loading DayForge...</p>
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
