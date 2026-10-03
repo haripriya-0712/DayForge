@@ -38,13 +38,14 @@ export function useAvatarTrigger() {
   // Re-compute Avatar state whenever tasks, stats, justCompletedTask, or forcedMood changes
   useEffect(() => {
     const mainGoal = goals.find((g) => !g.completed)?.title;
+    const currentUser = localStorage.getItem('username') || 'User';
     const computed = computeAvatarState(
       tasks,
       stats,
       [], // Missed alarms
       justCompletedTask,
       forcedMood,
-      'Haripriya',
+      currentUser,
       mainGoal
     );
     setAvatarState(computed);
@@ -66,13 +67,14 @@ export function useAvatarTrigger() {
 
   const refreshAvatarMessage = () => {
     const mainGoal = goals.find((g) => !g.completed)?.title;
+    const currentUser = localStorage.getItem('username') || 'User';
     const computed = computeAvatarState(
       tasks,
       stats,
       [],
       justCompletedTask,
       forcedMood,
-      'Haripriya',
+      currentUser,
       mainGoal
     );
     setAvatarState(computed);

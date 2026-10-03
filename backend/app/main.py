@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from app.database import create_db_and_tables, get_session
 from app.models import (
-    User, Task, TaskCreate, TaskUpdate, 
+    User, UserRegister, Task, TaskCreate, TaskUpdate, 
     Habit, HabitCreate, HabitLog, LoginLog, 
     Goal, GoalCreate, GoalUpdate, Milestone, MilestoneCreate,
     Reminder, ReminderCreate, ReminderUpdate
@@ -47,14 +47,40 @@ def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Dep
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
+@app.post("/auth/register")
+def register(register_data: UserRegister, session: Session = Depends(get_session)):
+    username = register_data.username.strip()
+    if not username or len(username) < 2:
+        raise HTTPException(status_code=400, detail="Username must be at least 2 characters long")
+    if not register_data.password or len(register_data.password) < 4:
+        raise HTTPException(status_code=400, detail="Password must be at least 4 characters long")
+
+    existing_user = session.exec(select(User).where(User.username == username)).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username is already registered. Please log in.")
+
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(register_data.password.encode('utf-8'), salt).decode('utf-8')
+    new_user = User(username=username, hashed_password=hashed)
+    session.add(new_user)
+    session.commit()
+    session.refresh(new_user)
+
+    access_token = jwt.encode({"sub": new_user.username}, SECRET_KEY, algorithm=ALGORITHM)
+    return {"access_token": access_token, "token_type": "bearer", "username": new_user.username}
+
 @app.post("/auth/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
-    user = session.exec(select(User).where(User.username == form_data.username)).first()
+    user = session.exec(select(User).where(User.username == form_data.username.strip())).first()
     if not user or not bcrypt.checkpw(form_data.password.encode('utf-8'), user.hashed_password.encode('utf-8')):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     
     access_token = jwt.encode({"sub": user.username}, SECRET_KEY, algorithm=ALGORITHM)
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer", "username": user.username}
+
+@app.get("/auth/me")
+def get_me(current_user: User = Depends(get_current_user)):
+    return {"id": current_user.id, "username": current_user.username}
 
 
 # Helper for calculating streaks

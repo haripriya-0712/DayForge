@@ -66,28 +66,66 @@ export async function loginPing() {
   }
 }
 
-export async function login() {
-  try {
-    const formData = new URLSearchParams();
-    formData.append('username', 'haripriya');
-    formData.append('password', 'password');
+export async function loginWithCredentials(username: string, password: string) {
+  const formData = new URLSearchParams();
+  formData.append('username', username);
+  formData.append('password', password);
 
-    const res = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formData.toString()
-    });
-    
-    if (res.ok) {
-      const data = await res.json();
-      localStorage.setItem('access_token', data.access_token);
-      await loginPing();
-      return true;
-    }
-  } catch (err) {
-    console.warn('Auto-login failed or backend unreachable:', err);
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: formData.toString()
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Login failed. Please check credentials.');
   }
-  return false;
+
+  const data = await res.json();
+  localStorage.setItem('access_token', data.access_token);
+  localStorage.setItem('username', data.username || username);
+  await loginPing();
+  return data;
+}
+
+export async function registerWithCredentials(username: string, password: string) {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Registration failed.');
+  }
+
+  const data = await res.json();
+  localStorage.setItem('access_token', data.access_token);
+  localStorage.setItem('username', data.username || username);
+  await loginPing();
+  return data;
+}
+
+export async function getCurrentUser(): Promise<{ id: number; username: string } | null> {
+  const token = localStorage.getItem('access_token');
+  if (!token) return null;
+  try {
+    const user = await fetchWithAuth('/auth/me');
+    if (user?.username) {
+      localStorage.setItem('username', user.username);
+    }
+    return user;
+  } catch (err) {
+    return null;
+  }
+}
+
+export function logout() {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('username');
+  window.location.reload();
 }
 
 export async function getHabits(): Promise<Habit[]> {

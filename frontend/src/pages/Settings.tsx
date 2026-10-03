@@ -8,12 +8,22 @@ import { Download, Upload, CheckCircle2, ShieldCheck, User, Sparkles } from 'luc
 import { PageWrapper } from '@/components/layout/PageWrapper';
 
 
+import { logout } from '@/lib/api';
+import { LogOut } from 'lucide-react';
+
 export function Settings() {
-  const [userName, setUserName] = useState('Haripriya');
+  const [userName, setUserName] = useState(() => localStorage.getItem('username') || '');
   const [avatarName, setAvatarName] = useState('Forge Fox');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSaveProfile = () => {
+    if (userName.trim()) {
+      localStorage.setItem('username', userName.trim());
+      setStatusMsg({ type: 'success', text: 'Profile updated successfully!' });
+    }
+  };
 
   const handleExport = async () => {
     try {
@@ -41,7 +51,7 @@ export function Settings() {
     <PageWrapper className="space-y-6 max-w-2xl pb-28">
       <div>
         <h1 className="text-3xl font-display font-extrabold text-text tracking-tight">Settings</h1>
-        <p className="text-text-muted text-sm mt-1">Configure your personal preferences & data backups</p>
+        <p className="text-text-muted text-sm mt-1">Configure your personal preferences & account</p>
       </div>
 
       {statusMsg && (
@@ -63,16 +73,30 @@ export function Settings() {
           <div className="p-2 rounded-xl bg-primary-soft text-primary">
             <User size={20} />
           </div>
-          <div>
-            <h2 className="font-bold text-lg text-text">Profile Information</h2>
-            <p className="text-xs text-text-muted">Personalize how DayForge greets you</p>
+          <div className="flex-1">
+            <h2 className="font-bold text-lg text-text">Account & Profile</h2>
+            <p className="text-xs text-text-muted">Manage your username and active session</p>
           </div>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-text">Your Name</label>
-            <Input value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Haripriya" />
+            <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-text">Account Username</label>
+            <div className="flex gap-2">
+              <Input value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="Your Username" />
+              <Button onClick={handleSaveProfile} variant="secondary">Save</Button>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-border/40 flex justify-between items-center">
+            <div>
+              <p className="text-sm font-semibold text-text">Current Session</p>
+              <p className="text-xs text-text-muted">Sign out of your account on this browser</p>
+            </div>
+            <Button variant="danger" onClick={logout} className="gap-2">
+              <LogOut size={16} />
+              <span>Log Out</span>
+            </Button>
           </div>
         </div>
       </Card>

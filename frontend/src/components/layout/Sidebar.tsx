@@ -1,8 +1,9 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Calendar, BarChart2, Bell, Target, Settings, Plus } from 'lucide-react';
+import { Home, Calendar, BarChart2, Bell, Target, Settings, Plus, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/Button';
 import { ThemeToggle } from './ThemeToggle';
+import { logout } from '@/lib/api';
 
 const NAV_ITEMS = [
   { name: 'Dashboard', path: '/', icon: Home },
@@ -18,6 +19,8 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className, onNewTask }: SidebarProps) {
+  const currentUser = localStorage.getItem('username') || 'User';
+
   return (
     <aside className={cn('p-4 h-screen max-h-screen overflow-y-auto flex flex-col no-scrollbar', className)}>
       <div className="flex items-center gap-2 px-2 py-4 mb-2 flex-shrink-0">
@@ -51,6 +54,17 @@ export function Sidebar({ className, onNewTask }: SidebarProps) {
       </nav>
 
       <div className="mt-auto space-y-1 pt-3 border-t border-border flex-shrink-0">
+        {/* User Profile Badge */}
+        <div className="flex items-center gap-2 px-3 py-2 bg-surface-2/60 rounded-xl mb-1 border border-border/50">
+          <div className="w-7 h-7 rounded-lg bg-primary/20 text-primary flex items-center justify-center font-semibold text-xs uppercase">
+            {currentUser.substring(0, 2)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-text truncate capitalize">{currentUser}</p>
+            <p className="text-[10px] text-text-muted truncate">Active Account</p>
+          </div>
+        </div>
+
         <ThemeToggle />
         <NavLink
           to="/settings"
@@ -64,6 +78,14 @@ export function Sidebar({ className, onNewTask }: SidebarProps) {
           <Settings size={20} />
           Settings
         </NavLink>
+        
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-500 hover:bg-rose-500/10 transition-colors"
+        >
+          <LogOut size={20} />
+          Log Out
+        </button>
       </div>
     </aside>
   );

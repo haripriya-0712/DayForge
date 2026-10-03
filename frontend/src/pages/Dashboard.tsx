@@ -89,9 +89,10 @@ export function Dashboard() {
         const newCompletedCount = newTasks.filter((t) => t.completed).length;
         if (newCompletedCount === newTasks.length && newTasks.length > 0) {
           triggerAllCompleted();
+          const currentUser = localStorage.getItem('username') || 'User';
           setMilestoneInfo({
             title: '100% Day Completed! 🌟',
-            subtitle: 'You completed all planned tasks for today. Outstanding consistency, Haripriya!',
+            subtitle: `You completed all planned tasks for today. Outstanding consistency, ${currentUser}!`,
             streakCount: stats?.login_current_streak || 1
           });
           setMilestoneOpen(true);
@@ -101,6 +102,8 @@ export function Dashboard() {
       console.error('Failed to update task:', err);
     }
   };
+
+  const currentUser = localStorage.getItem('username') || 'User';
 
   if (loading) {
     return (
@@ -142,8 +145,8 @@ export function Dashboard() {
             <div className="flex justify-between items-center relative z-10">
               <div className="space-y-2 max-w-lg">
                 <p className="text-white/80 font-semibold text-xs md:text-sm tracking-wide uppercase">{dateFormatted}</p>
-                <h1 className="text-2xl md:text-3xl font-display font-extrabold tracking-tight leading-tight">
-                  Ready to forge, Haripriya?
+                <h1 className="text-2xl md:text-3xl font-display font-extrabold tracking-tight leading-tight capitalize">
+                  Ready to forge, {currentUser}?
                 </h1>
                 <p className="text-white/95 text-sm md:text-base italic font-light pt-1">
                   "{message}"
